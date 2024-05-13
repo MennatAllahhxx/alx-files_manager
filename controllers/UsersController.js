@@ -6,10 +6,6 @@ class UsersController {
     const email = req.body.email || null;
     const password = req.body.password || null;
 
-    if (!req.body) {
-      return res.json({ error: 'Missing request body' }).status(400);
-    }
-
     if (!email) {
       return res.json({ error: 'Missing email' }).status(400);
     }
@@ -18,7 +14,7 @@ class UsersController {
       return res.json({ error: 'Missing password' }).status(400);
     }
 
-    const collection = dbClient.client.db().collection('users');
+    const collection = await dbClient.client.db().collection('users');
 
     const user = await collection.findOne({ email });
 
