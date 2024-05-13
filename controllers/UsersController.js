@@ -7,11 +7,11 @@ class UsersController {
     const password = req.body.password || null;
 
     if (!email) {
-      return res.json({ error: 'Missing email' }).status(400);
+      return res.status(400).json({ error: 'Missing email' });
     }
 
     if (!password) {
-      return res.json({ error: 'Missing password' }).status(400);
+      return res.status(400).json({ error: 'Missing password' });
     }
 
     const collection = await dbClient.client.db().collection('users');
@@ -19,7 +19,7 @@ class UsersController {
     const user = await collection.findOne({ email });
 
     if (user) {
-      return res.json({ error: 'Already exist' }).status(400);
+      return res.status(400).json({ error: 'Already exist' });
     }
 
     const hashedPassword = crypto.createHash('sha1')
@@ -30,7 +30,7 @@ class UsersController {
       password: hashedPassword,
     });
 
-    return res.json({ id: userAdded.insertedId, email }).status(201);
+    return res.status(201).json({ email, id: userAdded.insertedId });
   }
 }
 
