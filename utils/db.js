@@ -1,4 +1,5 @@
 /* eslint-disable class-methods-use-this */
+/* eslint-disable no-return-await */
 import mongodb from 'mongodb';
 import redisClient from './redis';
 
@@ -54,6 +55,7 @@ class DBClient {
     const userId = await redisClient.get(key);
     return this.getById('users', userId);
   }
+
   async returnPagedFilesList(pageNumber, pageSize, match) {
     const skip = pageNumber * pageSize;
     const pipeline = [

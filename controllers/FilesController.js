@@ -17,7 +17,7 @@ const validTypes = {
   folder: 'folder',
   file: 'file',
   image: 'image',
-}
+};
 
 class FilesController {
   static async postUpload(req, res) {
@@ -90,15 +90,16 @@ class FilesController {
       name: file.name,
       type: file.type,
       isPublic: file.isPublic,
-      parentId: file.parentId,
+      parentId: parentId === ROOT_FOLDER_ID || parentId === ROOT_FOLDER_ID.toString()
+        ? 0
+        : parentId,
     });
   }
 
   static async getShow(req, res) {
     // 1- Retrieve the user based on the token
     const token = req.header('X-Token');
-    const user = 
-      token ? await dbClient.getUserFromToken(token) : null;
+    const user = token ? await dbClient.getUserFromToken(token) : null;
 
     if (!user) {
       return res.status(401).send({ error: 'Unauthorized' });
@@ -123,24 +124,22 @@ class FilesController {
   static async getIndex(req, res) {
     // 1- Retrieve the user based on the token
     const token = req.header('X-Token');
-    const user = 
-      token ? await dbClient.getUserFromToken(token) : null;
+    const user = token ? await dbClient.getUserFromToken(token) : null;
 
     if (!user) {
       return res.status(401).send({ error: 'Unauthorized' });
     }
 
-    
-    const parentId = req.query.parentId? req.query.parentId : ROOT_FOLDER_ID.toString();
-    const pageNumber = req.query.page ? parseInt(req.query.page) : 0;
-    const pageSize = req.query.pageSize ? parseInt(req.query.pageSize) : 20;
+    const parentId = req.query.parentId ? req.query.parentId : ROOT_FOLDER_ID.toString();
+    const pageNumber = req.query.page ? parseInt(req.query.page, 10) : 0;
+    const pageSize = req.query.pageSize ? parseInt(req.query.pageSize, 10) : 20;
     const match = {
       userId: user.id,
-      parentId
-    }
+      parentId,
+    };
 
     const files = await dbClient.returnPagedFilesList(pageNumber, pageSize, match);
-    return res.status(200).send({ files: files });
+    return res.status(200).send({ files });
   }
 }
 
