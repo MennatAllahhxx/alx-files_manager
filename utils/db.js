@@ -24,7 +24,20 @@ class DBClient {
   async nbFiles() {
     return this.client.db().collection('files').countDocuments();
   }
+
+  async usersCollection() {
+    return this.client.db().collection('users');
+  }
+
+  async filescollection() {
+    return this.client.db().collection('files');
+  }
+  async getById(collection, id) {
+    const obId = new mongodb.ObjectID(id);
+    return this.client.db().collection(collection).findOne({ _id: obId });
+  }
 }
+
 
 const dbClient = new DBClient();
 module.exports = dbClient;
