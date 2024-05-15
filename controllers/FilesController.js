@@ -93,6 +93,55 @@ class FilesController {
       parentId: file.parentId,
     })
   }
+
+  static async getShow(req, res) {
+    // 1- Retrieve the user based on the token
+    const token = req.header('X-Token');
+    const user = 
+      token ? await dbClient.getUserFromToken(token) : null;
+
+    if (!user) {
+      return res.status(401).send({ error: 'Unauthorized' });
+    }
+    const fileId = req.params.id;
+    const file = await dbClient.getById('files', fileId);
+
+    if (!file) {
+      return res.status(404).send({ error: 'Not found' });
+    }
+
+    return res.status(200).send({
+      id: file.id,
+      userId: file.userId,
+      name: file.name,
+      type: file.type,
+      isPublic: file.isPublic,
+      parentId: file.parentId,
+    });
+  }
+
+  static async getIndex(req, res) {
+    // 1- Retrieve the user based on the token
+    const token = req.header('X-Token');
+    const user = 
+      token ? await dbClient.getUserFromToken(token) : null;
+
+    if (!user) {
+      return res.status(401).send({ error: 'Unauthorized' });
+    }
+
+    
+    const parentId = req.query.parentId? req.query.parentId : ROOT_FOLDER_ID.toString();
+    const pageNumber = req.query.page ? parseInt(req.query.page) : 0;
+    const pageSize = req.query.pageSize ? parseInt(req.query.pageSize) : 20;
+    const match = {
+      userId: user.id,
+      parentId
+    }
+
+    const files = await dbClient.returnPagedFilesList(pageNumber, pageSize, match);
+    return res.status(200).send({ files: files });
+  }
 }
 
 export default FilesController;

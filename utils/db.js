@@ -3,7 +3,7 @@ import redisClient from './redis';
 
 class DBClient {
   constructor() {
-    this.host = process.env.DB_HOST || 'localhost';
+    this.host = process.env.DB_HOST || '0.0.0.0';
     this.port = process.env.DB_PORT || 27017;
     this.database = process.env.DB_DATABASE || 'files_manager';
     this.url = `mongodb://${this.host}:${this.port}/${this.database}`;
@@ -51,6 +51,21 @@ class DBClient {
     const key = `auth_${token}`;
     const userId = await redisClient.get(key);
     return this.getById('users', userId);
+  }
+  async returnPagedFilesList(pageNumber, pageSize, match) {
+    const skip = pageNumber * pageSize;
+    const pipeline = [
+      {
+        $match: match,
+      },
+      {
+        $skip: skip,
+      },
+      {
+        $limit: pageSize,
+      },
+    ];
+    return await this.client.db().collection('files').aggregate(pipeline).toArray();
   }
 }
 
