@@ -11,6 +11,12 @@ const writeFileAsync = promisify(fs.writeFile);
 const ROOT_FOLDER_ID = 0;
 const DEFAULT_ROOT_FOLDER = 'files_manager';
 
+const validTypes = {
+  folder: 'folder',
+  file: 'file',
+  image: 'image',
+}
+
 class FilesController {
   static async postUpload(req, res) {
     const token = req.header('X-Token');
@@ -32,7 +38,7 @@ class FilesController {
     if (!name) {
       return res.status(400).send({ error: 'Missing name' });
     }
-    if (!type) {
+    if (!type || !Object.values(validTypes).includes(type)) {
       return res.status(400).send({ error: 'Missing type' });
     }
     if (!data && type !== 'folder') {
@@ -71,13 +77,13 @@ class FilesController {
     if (type !== 'folder') {
       const filePath = joinPath(baseDir, v4());
       await writeFileAsync(filePath, Buffer.from(base64Data, 'base64'));
-      file.localPath = filePath;
-      console.log('not a folder');
+      if (type === 'image') {
+        file.localPath = filePath;
+      }
     }
 
     const result = await dbClient.addObject('files', file);
     file.id = result.insertedId;
-    console.log(file);
     res.status(201).json({
       id: file.id,
       userId: file.userId,
