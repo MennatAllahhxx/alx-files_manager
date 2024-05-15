@@ -13,6 +13,12 @@ const writeFileAsync = promisify(fs.writeFile);
 const ROOT_FOLDER_ID = 0;
 const DEFAULT_ROOT_FOLDER = 'files_manager';
 
+const validTypes = {
+  folder: 'folder',
+  file: 'file',
+  image: 'image',
+}
+
 class FilesController {
   static async postUpload(req, res) {
     const token = req.header('X-Token');
@@ -32,7 +38,7 @@ class FilesController {
     if (!name) {
       return res.status(400).send({ error: 'Missing name' });
     }
-    if (!type) {
+    if (!type || !Object.values(validTypes).includes(type)) {
       return res.status(400).send({ error: 'Missing type' });
     }
     if (!data && type !== 'folder') {
@@ -71,13 +77,13 @@ class FilesController {
     if (type !== 'folder') {
       const filePath = joinPath(baseDir, v4());
       await writeFileAsync(filePath, Buffer.from(base64Data, 'base64'));
-      file.localPath = filePath;
-      console.log('not a folder');
+      if (type === 'image') {
+        file.localPath = filePath;
+      }
     }
 
     const result = await dbClient.addObject('files', file);
     file.id = result.insertedId;
-    console.log(file);
     res.status(201).json({
       id: file.id,
       userId: file.userId,
@@ -86,6 +92,55 @@ class FilesController {
       isPublic: file.isPublic,
       parentId: file.parentId,
     });
+  }
+
+  static async getShow(req, res) {
+    // 1- Retrieve the user based on the token
+    const token = req.header('X-Token');
+    const user = 
+      token ? await dbClient.getUserFromToken(token) : null;
+
+    if (!user) {
+      return res.status(401).send({ error: 'Unauthorized' });
+    }
+    const fileId = req.params.id;
+    const file = await dbClient.getById('files', fileId);
+
+    if (!file) {
+      return res.status(404).send({ error: 'Not found' });
+    }
+
+    return res.status(200).send({
+      id: file.id,
+      userId: file.userId,
+      name: file.name,
+      type: file.type,
+      isPublic: file.isPublic,
+      parentId: file.parentId,
+    });
+  }
+
+  static async getIndex(req, res) {
+    // 1- Retrieve the user based on the token
+    const token = req.header('X-Token');
+    const user = 
+      token ? await dbClient.getUserFromToken(token) : null;
+
+    if (!user) {
+      return res.status(401).send({ error: 'Unauthorized' });
+    }
+
+    
+    const parentId = req.query.parentId? req.query.parentId : ROOT_FOLDER_ID.toString();
+    const pageNumber = req.query.page ? parseInt(req.query.page) : 0;
+    const pageSize = req.query.pageSize ? parseInt(req.query.pageSize) : 20;
+    const match = {
+      userId: user.id,
+      parentId
+    }
+
+    const files = await dbClient.returnPagedFilesList(pageNumber, pageSize, match);
+    return res.status(200).send({ files: files });
   }
 }
 
