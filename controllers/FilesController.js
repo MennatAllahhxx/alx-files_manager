@@ -84,15 +84,14 @@ class FilesController {
 
     const result = await dbClient.addObject('files', file);
     file.id = result.insertedId;
+    const parentIdString = await file.parentId;
     res.status(201).json({
       id: file.id,
       userId: file.userId,
       name: file.name,
       type: file.type,
       isPublic: file.isPublic,
-      parentId: parentId === ROOT_FOLDER_ID || parentId === ROOT_FOLDER_ID.toString()
-        ? 0
-        : parentId,
+      parentId: parentIdString
     });
   }
 
