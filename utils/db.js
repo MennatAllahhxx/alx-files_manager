@@ -1,3 +1,4 @@
+/* eslint-disable class-methods-use-this */
 import mongodb from 'mongodb';
 import redisClient from './redis';
 
@@ -33,6 +34,7 @@ class DBClient {
   async filesCollection() {
     return this.client.db().collection('files');
   }
+
   async getById(collection, id) {
     const obId = new mongodb.ObjectID(id);
     return this.client.db().collection(collection).findOne({ _id: obId });
@@ -53,7 +55,6 @@ class DBClient {
     return this.getById('users', userId);
   }
 }
-
 
 const dbClient = new DBClient();
 module.exports = dbClient;

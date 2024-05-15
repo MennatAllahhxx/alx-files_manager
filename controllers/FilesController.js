@@ -1,10 +1,12 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable consistent-return */
 import fs from 'fs';
-import dbClient from '../utils/db';
 import { v4 } from 'uuid';
-import UsersController from './UsersController';
 import { promisify } from 'util';
 import { join as joinPath } from 'path';
 import { tmpdir } from 'os';
+import UsersController from './UsersController';
+import dbClient from '../utils/db';
 
 const mkDirAsync = promisify(fs.mkdir);
 const writeFileAsync = promisify(fs.writeFile);
@@ -14,20 +16,18 @@ const DEFAULT_ROOT_FOLDER = 'files_manager';
 class FilesController {
   static async postUpload(req, res) {
     const token = req.header('X-Token');
-    const user = 
-      token ? await dbClient.getUserFromToken(token) : null;
+    const user = token ? await dbClient.getUserFromToken(token) : null;
 
     if (!user) {
       return res.status(401).send({ error: 'Unauthorized' });
     }
     // check if file exists
-    const name = req.body.name;
-    const type = req.body.type;
+    const { name } = req.body;
+    const { type } = req.body;
     const parentId = req.body && req.body.parentId ? req.body.parentId : ROOT_FOLDER_ID;
     const isPublic = req.body.isPublic ? req.body.isPublic : false;
-    const data = req.body.data;
+    const { data } = req.body;
     const base64Data = req.body && req.body.data ? req.body.data : '';
-  
 
     if (!name) {
       return res.status(400).send({ error: 'Missing name' });
@@ -85,7 +85,7 @@ class FilesController {
       type: file.type,
       isPublic: file.isPublic,
       parentId: file.parentId,
-    })
+    });
   }
 }
 

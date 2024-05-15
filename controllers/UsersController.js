@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import crypto from 'crypto';
 import dbClient from '../utils/db';
 import redisClient from '../utils/redis';
@@ -41,16 +42,14 @@ class UsersController {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-
     const collection = await dbClient.client.db().collection('users');
-  
+
     const key = `auth_${token}`;
-  
-    const userId = await redisClient.get(key);    
+
+    const userId = await redisClient.get(key);
     console.log(userId);
 
-    if (!userId)
-      return res.status(401).json({ error: 'Unauthorized' });
+    if (!userId) { return res.status(401).json({ error: 'Unauthorized' }); }
 
     const user = await dbClient.getById('users', userId);
     console.log(user);
