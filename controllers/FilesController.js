@@ -64,9 +64,11 @@ class FilesController {
       userId,
       name,
       type,
-      isPublic,
       parentId: parentId || 0,
     };
+    if (type !== 'folder') {
+      file.isPublic = isPublic;
+    }
 
     await mkDirAsync(baseDir, { recursive: true });
 
