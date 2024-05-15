@@ -65,10 +65,7 @@ class FilesController {
       name,
       type,
       isPublic,
-      parentId:
-        parentId === ROOT_FOLDER_ID || parentId === ROOT_FOLDER_ID.toString()
-          ? '0'
-          : dbClient.getObjectID(parentId),
+      parentId: parentId || 0,
     };
 
     await mkDirAsync(baseDir, { recursive: true });
@@ -90,7 +87,7 @@ class FilesController {
       name: file.name,
       type: file.type,
       isPublic: file.isPublic,
-      parentId,
+      parentId: parentId || 0,
     });
   }
 
